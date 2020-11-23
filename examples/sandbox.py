@@ -78,7 +78,7 @@ data_dir = "bird_dataset/"  # MODIFY THIS IF YOU WANT
 records = []
 torch.manual_seed(0)
 
-model = FusionClassifier(
+model = GradientBoostingClassifier(
     estimators=estimators,
     cuda=False,
     n_estimators=n_estimators,

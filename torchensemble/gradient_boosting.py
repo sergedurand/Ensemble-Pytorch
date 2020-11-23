@@ -16,12 +16,15 @@ from ._base import BaseModule
 
 class BaseGradientBossting(BaseModule):
 
-    def __init__(self, estimator, n_estimators, output_dim,
+    def __init__(self, estimators, n_estimators, output_dim,
                  lr, weight_decay, epochs,
                  shrinkage_rate=1., cuda=True, log_interval=100):
         super(BaseModule, self).__init__()
-
-        self.estimator = estimator
+        self.estimator = "" # afraid of breaking something without it...
+        self.estimators_ = nn.ModuleList()
+        # in this version we already have initialized estimators
+        for estimator in estimators:
+            self.estimators_.append(estimator)
         self.n_estimators = n_estimators
         self.output_dim = output_dim
 
@@ -31,13 +34,6 @@ class BaseGradientBossting(BaseModule):
         self.shrinkage_rate = shrinkage_rate
 
         self.log_interval = log_interval
-        self.device = torch.device('cuda' if cuda else 'cpu')
-
-        # Base estimators
-        self.estimators_ = nn.ModuleList()
-        for _ in range(self.n_estimators):
-            self.estimators_.append(estimator().to(self.device))
-
     def _validate_parameters(self):
 
         if not self.n_estimators > 0:
