@@ -20,6 +20,9 @@ class Mobilenet(nn.Module):
     def forward(self, input):
         return self.model(input)
 
+    def __name__(self):
+        return self.model.__class__.__name__
+
 
 class Resnext(nn.Module):
     def __init__(self):
@@ -48,6 +51,8 @@ class Resnet50(nn.Module):
 
     def forward(self, input):
         return self.model(input)
+    def __name__(self):
+        return self.model.__class__.__name__
 
 class State:
     def __init__(self, model, optim):
@@ -55,6 +60,32 @@ class State:
         self.optimizer = optim
         self.epoch = 0
 
-model = models.wide_resnet101_2(pretrained=True)
-state = State(model,None)
-torch.save(state,"wideresnet101.pth")
+est1 = Resnet50()
+est2 = Mobilenet()
+estimators = [est1, est2]
+
+# Hyper-parameters
+n_estimators = 4
+output_dim = 20
+lr = 1e-4
+weight_decay = 5e-4
+epochs = 10
+resolution = 128
+
+# Utils
+batch_size = 8
+data_dir = "bird_dataset/"  # MODIFY THIS IF YOU WANT
+records = []
+torch.manual_seed(0)
+
+model = FusionClassifier(
+    estimators=estimators,
+    cuda=False,
+    n_estimators=n_estimators,
+    output_dim=output_dim,
+    lr=lr,
+    weight_decay=weight_decay,
+    epochs=epochs,
+)
+
+print(model)

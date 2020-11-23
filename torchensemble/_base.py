@@ -59,11 +59,12 @@ class BaseModule(abc.ABC, nn.Module):
 
         """
         super(BaseModule, self).__init__()
+        self.estimator = ""
 
         self.estimators_ = nn.ModuleList()
         # in this version we already have initialized estimators
         for estimator in estimators:
-            self.estimators.append(estimator)
+            self.estimators_.append(estimator)
         self.n_estimators = n_estimators
         self.output_dim = output_dim
 
@@ -94,8 +95,15 @@ class BaseModule(abc.ABC, nn.Module):
 
     def __str__(self):
         msg = '==============================\n'
-        msg += '{:<20}: {}\n'.format('Base Estimator',
-                                     self.estimator.__name__)
+        name = ""
+        for i in range(len(self.estimators_)):
+            if i < len(self.estimators_)-1:
+                name += self.estimators_[i].__name__() + ", "
+            else:
+                name += self.estimators_[i].__name__()
+
+        msg += '{:<20}: {}\n'.format('Estimators',
+                                     name)
         msg += '{:<20}: {}\n'.format('n_estimators', self.n_estimators)
         msg += '{:<20}: {:.5f}\n'.format('Learning Rate', self.lr)
         msg += '{:<20}: {:.5f}\n'.format('Weight Decay', self.weight_decay)
