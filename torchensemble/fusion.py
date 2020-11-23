@@ -27,7 +27,7 @@ class FusionClassifier(BaseModule):
 
         return y_pred
 
-    def fit(self, train_loader):
+    def fit(self, train_loader, val_loader=None):
 
         self.train()
         self._validate_parameters()
@@ -35,8 +35,8 @@ class FusionClassifier(BaseModule):
         for epoch in range(self.epochs):
             correct = 0
             average_loss = 0
+            self.train()
             for batch_idx, (X_train, y_train) in enumerate(train_loader):
-
                 batch_size = X_train.size()[0]
                 X_train, y_train = (X_train.to(self.device),
                                     y_train.to(self.device))
@@ -53,9 +53,11 @@ class FusionClassifier(BaseModule):
                     average_loss += loss
 
             msg = ('Epoch: {:03d}  | Loss: {:.5f} |'
-                    ' Correct: {:d}/{:d}')
+                   ' Correct: {:d}/{:d}')
             print(msg.format(epoch, loss / len(train_loader),
-                                correct, len(train_loader.dataset)))
+                             correct, len(train_loader.dataset)))
+            if epoch % 5 == 0:
+                self.predict(val_loader)
 
     def predict(self, test_loader):
 
@@ -123,4 +125,3 @@ class FusionRegressor(BaseModule):
             mse += criterion(output, y_test)
 
         return mse / len(test_loader)
-

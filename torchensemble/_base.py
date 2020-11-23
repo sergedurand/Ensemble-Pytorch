@@ -13,7 +13,7 @@ class BaseModule(abc.ABC, nn.Module):
     """
 
     def __init__(self,
-                 estimator,
+                 estimators,
                  n_estimators,
                  output_dim,
                  lr,
@@ -61,7 +61,10 @@ class BaseModule(abc.ABC, nn.Module):
         """
         super(BaseModule, self).__init__()
 
-        self.estimator = estimator
+        self.estimators_ = nn.ModuleList()
+        # in this version we already have initialized estimators
+        for estimator in estimators:
+            self.estimators.append(estimator)
         self.n_estimators = n_estimators
         self.output_dim = output_dim
 
@@ -72,12 +75,8 @@ class BaseModule(abc.ABC, nn.Module):
         self.log_interval = log_interval
         self.n_jobs = n_jobs
         self.device = torch.device('cuda' if cuda else 'cpu')
-
-        # Initialize base estimators
-        self.estimators_ = nn.ModuleList()
-        os.system("export ftp_proxy=ftp://proxy.ufr-info-p6.jussieu.fr:3128 && export https_proxy=https://proxy.ufr-info-p6.jussieu.fr:3128 && export use_proxy=yes && git config --global http.proxy http://proxy.ufr-info-p6.jussieu.fr:3128 && git config --global https.proxy https://proxy.ufr-info-p6.jussieu.fr:3128 && export TORCH_HOME='/tempory/cache/checkpoints'")
-        for _ in range(self.n_estimators):
-            self.estimators_.append(estimator().to(self.device))
+        for estimator in self.estimators_:
+            estimator = estimator.to(device=self.device)
 
         # A global optimizer
         self.optimizer = torch.optim.Adam(self.parameters(),

@@ -70,7 +70,7 @@ class VotingClassifier(BaseModule):
 
         return y_pred_proba
 
-    def fit(self, train_loader):
+    def fit(self, train_loader, val_loader):
 
         self.train()
         self._validate_parameters()
@@ -89,7 +89,9 @@ class VotingClassifier(BaseModule):
                 # Update the base estimator container
                 for i in range(self.n_estimators):
                     self.estimators_[i] = copy.deepcopy(rets[i])
-
+            if epoch % 5 == 0:
+                self.predict(val_loader)
+                
     def predict(self, test_loader):
 
         self.eval()

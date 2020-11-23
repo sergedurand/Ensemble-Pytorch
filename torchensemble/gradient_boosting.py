@@ -4,6 +4,7 @@
   computed based on the ground truth and the output from base estimators
   fitted before, using ordinary least square.
 """
+from abc import abstractmethod
 
 import torch
 import torch.nn as nn
@@ -78,7 +79,7 @@ class BaseGradientBossting(BaseModule):
 
         return y_pred
 
-    def fit(self, train_loader):
+    def fit(self, train_loader, val_loader):
 
         self.train()
         self._validate_parameters()
@@ -116,7 +117,9 @@ class BaseGradientBossting(BaseModule):
                         msg = ('Estimator: {:03d} | Epoch: {:03d} | Batch:'
                                ' {:03d} | RegLoss: {:.5f}')
                         print(msg.format(est_idx, epoch, batch_idx, loss))
-
+                # this will fail on regressor ?
+                if epoch % 5 == 0:
+                    self.predict(val_loader)
 
 class GradientBoostingClassifier(BaseGradientBossting):
 
