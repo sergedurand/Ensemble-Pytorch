@@ -81,8 +81,11 @@ class BaseModule(abc.ABC, nn.Module):
         params = list()
         for estimator in self.estimators_:
             if isinstance(estimator.model,torchvision.models.resnet.ResNet):
-                params += list(estimator.model.layer4.parameters())
-                params += list(estimator.model.fc.parameters())
+                params += list(estimator.model.model.layer4.parameters())
+                params += list(estimator.model.model.fc.parameters())
+            elif isinstance(estimator.model,torchvision.models.inception.Inception3):
+                params += list(estimator.model.mixed7c.parameters())
+                params += list(estimator.model.fc.parameters(()))
             else:
                 params += list(estimator.parameters())
 

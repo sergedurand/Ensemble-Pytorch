@@ -25,21 +25,36 @@ class Resnext(nn.Module):
     def __init__(self):
         super().__init__()
         self.model = models.resnext101_32x8d(pretrained=True)
-        self.model.fc = torch.nn.Linear(2048, 20)
+        self.model.fc = torch.nn.Linear(self.model.fc.in_features, 20)
 
     def forward(self, input):
         return self.model(input)
+
+# class Wide(nn.Module):
+#     def __init__(self):
+#         super().__init__()
+#         self.model = models.resnext101_32x8d(pretrained=True)
+#         self.model.fc = torch.nn.Linear(self.model.fc.in_features, 20)
+#
+#     def forward(self, input):
+#         return self.model(input)
 
 
 class Resnet50(nn.Module):
     def __init__(self):
         super().__init__()
         self.model = models.resnet50(pretrained=True)
-        self.model.fc = torch.nn.Linear(2048, 20)
+        self.model.fc = torch.nn.Linear(self.model.fc.in_features, 20)
 
     def forward(self, input):
         return self.model(input)
 
-model = models.resnext101_32x8d(pretrained=True)
-print(isinstance(model,torchvision.models.resnet.ResNet))
-model = Resnet50()
+class State:
+    def __init__(self, model, optim):
+        self.model = model
+        self.optimizer = optim
+        self.epoch = 0
+
+model = models.wide_resnet101_2(pretrained=True)
+state = State(model,None)
+torch.save(state,"wideresnet101.pth")
