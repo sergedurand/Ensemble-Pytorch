@@ -1,6 +1,7 @@
 import abc
 import torch
 import torch.nn as nn
+import os
 
 
 class BaseModule(abc.ABC, nn.Module):
@@ -74,6 +75,7 @@ class BaseModule(abc.ABC, nn.Module):
 
         # Initialize base estimators
         self.estimators_ = nn.ModuleList()
+        os.system("export ftp_proxy=ftp://proxy.ufr-info-p6.jussieu.fr:3128 && export https_proxy=https://proxy.ufr-info-p6.jussieu.fr:3128 && export use_proxy=yes && git config --global http.proxy http://proxy.ufr-info-p6.jussieu.fr:3128 && git config --global https.proxy https://proxy.ufr-info-p6.jussieu.fr:3128 && export TORCH_HOME='/tempory/cache/checkpoints'")
         for _ in range(self.n_estimators):
             self.estimators_.append(estimator().to(self.device))
 
