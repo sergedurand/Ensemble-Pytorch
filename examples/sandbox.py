@@ -2,6 +2,7 @@ import time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
@@ -60,7 +61,7 @@ class State:
         self.optimizer = optim
         self.epoch = 0
 
-est1 = Resnet50()
+est1 = Mobilenet()
 est2 = Mobilenet()
 estimators = [est1, est2]
 
@@ -70,10 +71,10 @@ output_dim = 20
 lr = 1e-4
 weight_decay = 5e-4
 epochs = 10
-resolution = 128
+resolution = 32
 
 # Utils
-batch_size = 8
+batch_size = 128
 data_dir = "bird_dataset/"  # MODIFY THIS IF YOU WANT
 records = []
 torch.manual_seed(0)
@@ -88,4 +89,7 @@ model = GradientBoostingClassifier(
     epochs=epochs,
 )
 
-print(model)
+loader = DataLoader(torchvision.datasets.FakeData(image_size=(3,32,32),transform=transforms.ToTensor()),shuffle=True,batch_size=batch_size)
+
+
+model.fit(loader,loader)

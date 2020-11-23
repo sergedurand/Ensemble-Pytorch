@@ -72,14 +72,13 @@ class BaseGradientBossting(BaseModule):
         # from all base estimators, with each of them multipled by the
         # shrinkage rate.
         for estimator in self.estimators_:
+            estimator = estimator.to(self.device)
             y_pred += self.shrinkage_rate * estimator(X)
 
         return y_pred
 
     def fit(self, train_loader, val_loader):
         cuda = torch.cuda.is_available()
-        self.device = torch.device('cuda' if cuda else 'cpu')
-        self.estimators_.to(self.device)
         self.train()
         self._validate_parameters()
         criterion = nn.MSELoss(reduction='sum')
@@ -185,6 +184,57 @@ class GradientBoostingClassifier(BaseGradientBossting):
         print("Test accuracy {} %".format(accuracy))
 
         return accuracy
+
+    def blind_predict(self,test_loader):
+        cuda = torch.cuda.is_available()
+        self.device = torch.device('cuda' if cuda else 'cpu')
+        self.estimators_.to(self.device)
+        self.eval()
+        res = dict()
+        with torch.no_grad():
+            for images, name in test_loader:
+                name = name[0]
+                images = [img.to(self.device) for img in images]
+                if len(images) == 2:
+                    output1 = F.softmax(self.forward(images[0]),dim=1)
+                    output2 = F.softmax(self.forward(images[1]),dim=1)
+                    output = 0.5 * output1 + 0.5 * output2
+                else:
+                    output1 = F.softmax(self.forward(images[0]), dim=1)
+                    output2 = F.softmax(self.forward(images[1]), dim=1)
+                    output3 = F.softmax(self.forward(images[2]), dim=1)
+                    output4 = F.softmax(self.forward(images[3]), dim=1)
+                    output = 0.2 * output1 + 0.2 * output2 + 0.3 * output3 + 0.3 * output4
+                pred = output.data.max(1)[1]
+                res[name] = pred
+        return res
+
+
+    def val_predict(self, val_loader):
+        cuda = torch.cuda.is_available()
+        self.device = torch.device('cuda' if cuda else 'cpu')
+        self.estimators_.to(self.device)
+        self.eval()
+        correct = 0
+        with torch.no_grad():
+            for images, label in val_loader:
+                images = [img.to(self.device) for img in images]
+                if len(images) == 2:
+                    output1 = F.softmax(self.forward(images[0]), dim=1)
+                    output2 = F.softmax(self.forward(images[1]), dim=1)
+                    output = 0.5 * output1 + 0.5 * output2
+                else:
+                    output1 = F.softmax(self.forward(images[0]), dim=1)
+                    output2 = F.softmax(self.forward(images[1]), dim=1)
+                    output3 = F.softmax(self.forward(images[2]), dim=1)
+                    output4 = F.softmax(self.forward(images[4]), dim=1)
+                    output = 0.2 * output1 + 0.2 * output2 + 0.3 * output3 + 0.3 * output4
+                pred = output.data.max(1)[1]
+                correct += label.eq(label.view(-1).data).sum()
+            accuracy = 100. * float(correct) / len(val_loader.dataset)
+
+        print("Test accuracy {} %".format(accuracy))
+
 
 
 class GradientBoostingRegressor(BaseGradientBossting):

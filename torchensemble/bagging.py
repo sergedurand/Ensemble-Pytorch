@@ -21,6 +21,7 @@ def _parallel_fit(epoch, estimator_idx,
     """
     Private function used to fit base estimators in parallel.
     """
+    estimator = estimator.to(device)
     params = list()
     if isinstance(estimator.model, torchvision.models.resnet.ResNet):
         params += list(estimator.model.model.layer4.parameters())

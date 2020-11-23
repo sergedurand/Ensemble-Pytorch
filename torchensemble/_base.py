@@ -18,7 +18,6 @@ class BaseModule(abc.ABC, nn.Module):
                  lr,
                  weight_decay,
                  epochs,
-                 cuda=True,
                  log_interval=100,
                  n_jobs=1):
         """
@@ -60,12 +59,13 @@ class BaseModule(abc.ABC, nn.Module):
         """
         super(BaseModule, self).__init__()
         self.estimator = ""
-
+        cuda = torch.cuda.is_available()
+        self.device = torch.device('cuda' if cuda else 'cpu')
         self.estimators_ = nn.ModuleList()
         # in this version we already have initialized estimators
         for estimator in estimators:
             self.estimators_.append(estimator)
-        self.n_estimators = n_estimators
+        self.n_estimators = len(self.estimators_)
         self.output_dim = output_dim
 
         self.lr = lr
