@@ -32,8 +32,9 @@ class FusionClassifier(BaseModule):
         self.train()
         self._validate_parameters()
         criterion = nn.CrossEntropyLoss()  # for classification
-
         for epoch in range(self.epochs):
+            correct = 0
+            average_loss = 0
             for batch_idx, (X_train, y_train) in enumerate(train_loader):
 
                 batch_size = X_train.size()[0]
@@ -46,16 +47,15 @@ class FusionClassifier(BaseModule):
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
-
-                # Print training status
-                if batch_idx % self.log_interval == 0:
+                with torch.no_grad():
                     y_pred = F.softmax(output, dim=1).data.max(1)[1]
-                    correct = y_pred.eq(y_train.view(-1).data).sum()
+                    correct += y_pred.eq(y_train.view(-1).data).sum()
+                    average_loss += loss
 
-                    msg = ('Epoch: {:03d} | Batch: {:03d} | Loss: {:.5f} |'
-                           ' Correct: {:d}/{:d}')
-                    print(msg.format(epoch, batch_idx, loss,
-                                     correct, batch_size))
+            msg = ('Epoch: {:03d}  | Loss: {:.5f} |'
+                    ' Correct: {:d}/{:d}')
+            print(msg.format(epoch, loss / len(train_loader),
+                                correct, len(train_loader.dataset)))
 
     def predict(self, test_loader):
 
@@ -70,7 +70,7 @@ class FusionClassifier(BaseModule):
             correct += y_pred.eq(y_test.view(-1).data).sum()
 
         accuracy = 100. * float(correct) / len(test_loader.dataset)
-
+        print("Test accuracy {} %".format(accuracy))
         return accuracy
 
 
@@ -123,3 +123,4 @@ class FusionRegressor(BaseModule):
             mse += criterion(output, y_test)
 
         return mse / len(test_loader)
+

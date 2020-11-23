@@ -169,6 +169,7 @@ class GradientBoostingClassifier(BaseGradientBossting):
                 correct += y_pred.eq(y_test.view(-1).data).sum()
 
             accuracy = 100. * float(correct) / len(test_loader.dataset)
+        print("Test accuracy {} %".format(accuracy))
 
         return accuracy
 
@@ -201,3 +202,4 @@ class GradientBoostingRegressor(BaseGradientBossting):
             mse += criterion(output, y_test)
 
         return mse / len(test_loader)
+
