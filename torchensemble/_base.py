@@ -85,7 +85,7 @@ class BaseModule(abc.ABC, nn.Module):
                 params += list(estimator.model.model.layer4.parameters())
                 params += list(estimator.model.model.fc.parameters())
             elif isinstance(estimator.model,torchvision.models.inception.Inception3):
-                params += list(estimator.model.mixed7c.parameters())
+                params += list(estimator.model.Mixed_7c.parameters())
                 params += list(estimator.model.fc.parameters(()))
             else:
                 params += list(estimator.parameters())
