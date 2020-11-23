@@ -9,6 +9,7 @@ import copy
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision
 from joblib import Parallel, delayed
 
 from ._base import BaseModule
@@ -20,7 +21,16 @@ def _parallel_fit(epoch, estimator_idx,
     """
     Private function used to fit base estimators in parallel.
     """
-    optimizer = torch.optim.Adam(estimator.parameters(),
+    params = list()
+    if isinstance(estimator.model, torchvision.models.resnet.ResNet):
+        params += list(estimator.model.model.layer4.parameters())
+        params += list(estimator.model.model.fc.parameters())
+    elif isinstance(estimator.model, torchvision.models.inception.Inception3):
+        params += list(estimator.model.Mixed_7c.parameters())
+        params += list(estimator.model.fc.parameters(()))
+    else:
+        params += list(estimator.parameters())
+    optimizer = torch.optim.Adam(params,
                                  lr=lr, weight_decay=weight_decay)
 
     for batch_idx, (X_train, y_train) in enumerate(data_loader):
@@ -79,7 +89,9 @@ class BaggingClassifier(BaseModule):
         return y_pred_proba
 
     def fit(self, train_loader, val_loader):
-
+        cuda = torch.cuda.is_available()
+        self.device = torch.device('cuda' if cuda else 'cpu')
+        self.estimators_.to(self.device)
         self.train()
         self._validate_parameters()
         criterion = nn.CrossEntropyLoss()
@@ -101,7 +113,10 @@ class BaggingClassifier(BaseModule):
                 self.predict(val_loader)
 
     def predict(self, test_loader):
-
+        cuda = torch.cuda.is_available()
+        self.device = torch.device('cuda' if cuda else 'cpu')
+        for estimator in self.estimators_:
+            estimator = estimator.to(device=self.device)
         self.eval()
         correct = 0.
 

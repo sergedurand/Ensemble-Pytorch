@@ -74,24 +74,7 @@ class BaseModule(abc.ABC, nn.Module):
 
         self.log_interval = log_interval
         self.n_jobs = n_jobs
-        self.device = torch.device('cuda' if cuda else 'cpu')
-        for estimator in self.estimators_:
-            estimator = estimator.to(device=self.device)
 
-        # A global optimizer
-        params = list()
-        for estimator in self.estimators_:
-            if isinstance(estimator.model,torchvision.models.resnet.ResNet):
-                params += list(estimator.model.model.layer4.parameters())
-                params += list(estimator.model.model.fc.parameters())
-            elif isinstance(estimator.model,torchvision.models.inception.Inception3):
-                params += list(estimator.model.Mixed_7c.parameters())
-                params += list(estimator.model.fc.parameters(()))
-            else:
-                params += list(estimator.parameters())
-
-        self.optimizer = torch.optim.Adam(params,
-                                          lr=lr, weight_decay=weight_decay)
 
     def __str__(self):
         msg = '==============================\n'

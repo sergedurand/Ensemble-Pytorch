@@ -8,6 +8,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision
 
 from ._base import BaseModule
 
@@ -28,7 +29,22 @@ class FusionClassifier(BaseModule):
         return y_pred
 
     def fit(self, train_loader, val_loader=None):
+        cuda = torch.cuda.is_available()
+        self.device = torch.device('cuda' if cuda else 'cpu')
+        self.estimators_.to(self.device)
+        params = list()
+        for estimator in self.estimators_:
+            if isinstance(estimator.model, torchvision.models.resnet.ResNet):
+                params += list(estimator.model.model.layer4.parameters())
+                params += list(estimator.model.model.fc.parameters())
+            elif isinstance(estimator.model, torchvision.models.inception.Inception3):
+                params += list(estimator.model.Mixed_7c.parameters())
+                params += list(estimator.model.fc.parameters(()))
+            else:
+                params += list(estimator.parameters())
 
+        self.optimizer = torch.optim.Adam(params,
+                                          lr=self.lr, weight_decay=self.weight_decay)
         self.train()
         self._validate_parameters()
         criterion = nn.CrossEntropyLoss()  # for classification
@@ -60,7 +76,9 @@ class FusionClassifier(BaseModule):
                 self.predict(val_loader)
 
     def predict(self, test_loader):
-
+        cuda = torch.cuda.is_available()
+        self.device = torch.device('cuda' if cuda else 'cpu')
+        self.estimators_.to(self.device)
         self.eval()
         correct = 0.
 
