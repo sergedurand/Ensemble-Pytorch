@@ -91,7 +91,7 @@ class VotingClassifier(BaseModule):
                     self.estimators_[i] = copy.deepcopy(rets[i])
             if epoch % 5 == 0:
                 self.predict(val_loader)
-                
+
     def predict(self, test_loader):
 
         self.eval()

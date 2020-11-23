@@ -1,7 +1,15 @@
-from torch import nn
-from torchvision import models
+import time
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
 
+from torchensemble.fusion import FusionClassifier
+from torchensemble.voting import VotingClassifier
+from torchensemble.bagging import BaggingClassifier
+from torchensemble.gradient_boosting import GradientBoostingClassifier
+from torchvision import models
 
 class Mobilenet(nn.Module):
     def __init__(self):
@@ -26,11 +34,12 @@ class Resnext(nn.Module):
 class Resnet50(nn.Module):
     def __init__(self):
         super().__init__()
-        self.model = models.re(pretrained=True)
+        self.model = models.resnet50(pretrained=True)
         self.model.fc = torch.nn.Linear(2048, 20)
 
     def forward(self, input):
         return self.model(input)
 
 model = models.resnext101_32x8d(pretrained=True)
-print(type(model))
+print(isinstance(model,torchvision.models.resnet.ResNet))
+model = Resnet50()

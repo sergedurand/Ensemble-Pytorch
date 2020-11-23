@@ -1,8 +1,7 @@
 import abc
 import torch
 import torch.nn as nn
-import os
-
+import torchvision
 
 class BaseModule(abc.ABC, nn.Module):
     """
@@ -79,7 +78,15 @@ class BaseModule(abc.ABC, nn.Module):
             estimator = estimator.to(device=self.device)
 
         # A global optimizer
-        self.optimizer = torch.optim.Adam(self.parameters(),
+        params = list()
+        for estimator in self.estimators_:
+            if isinstance(estimator.model,torchvision.models.resnet.ResNet):
+                params += list(estimator.model.layer4.parameters())
+                params += list(estimator.model.fc.parameters())
+            else:
+                params += list(estimator.parameters())
+
+        self.optimizer = torch.optim.Adam(params,
                                           lr=lr, weight_decay=weight_decay)
 
     def __str__(self):
