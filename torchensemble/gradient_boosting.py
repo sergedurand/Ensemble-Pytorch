@@ -22,6 +22,12 @@ class BaseGradientBossting(BaseModule):
         super(BaseModule, self).__init__()
         self.estimator = "" # afraid of breaking something without it...
         self.estimators_ = nn.ModuleList()
+        if torch.cuda.is_available():
+            print("Using GPU")
+            print(torch.cuda.get_device_name())
+            self.device = torch.device("cuda")
+        else:
+            self.device = torch.device("cpu")
         # in this version we already have initialized estimators
         for estimator in estimators:
             self.estimators_.append(estimator)
