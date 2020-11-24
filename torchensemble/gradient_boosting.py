@@ -30,7 +30,7 @@ class BaseGradientBossting(BaseModule):
             self.device = torch.device("cpu")
         # in this version we already have initialized estimators
         for estimator in estimators:
-            self.estimators_.append(estimator)
+            self.estimators_.append(estimator.to(self.device))
             
         self.n_estimators = n_estimators
         self.output_dim = output_dim
