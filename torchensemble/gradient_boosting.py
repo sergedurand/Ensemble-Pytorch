@@ -31,6 +31,7 @@ class BaseGradientBossting(BaseModule):
         # in this version we already have initialized estimators
         for estimator in estimators:
             self.estimators_.append(estimator)
+            
         self.n_estimators = n_estimators
         self.output_dim = output_dim
 
@@ -77,8 +78,10 @@ class BaseGradientBossting(BaseModule):
         # The output of `GradientBoostingRegressor` is the summation of output
         # from all base estimators, with each of them multipled by the
         # shrinkage rate.
+        X = X.to(self.device)
         for estimator in self.estimators_:
             estimator = estimator.to(self.device)
+
             y_pred += self.shrinkage_rate * estimator(X)
 
         return y_pred
